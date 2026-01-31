@@ -2,453 +2,208 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Hunt Mode — Ablution Entrance</title>
+  <title>Mystery Rally – Hunt Mode</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #0b0f14; color: #e8eef7; }
-    .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
-    .card { background: #121824; border: 1px solid #1f2a3a; border-radius: 14px; padding: 14px; margin: 12px 0; }
-    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0f14;
+      color: #e8eef7;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: auto;
+      padding: 16px;
+    }
+    .card {
+      background: #121824;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border: 1px solid #1f2a3a;
+    }
     button {
-      background: #2a6df4; color: #fff; border: 0; border-radius: 12px;
-      padding: 12px 14px; font-size: 16px; cursor: pointer;
+      background: #2a6df4;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 16px;
+      cursor: pointer;
     }
     button.secondary { background: #223149; }
     button.danger { background: #b23b3b; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #223149; }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      background: #223149;
+      border-radius: 999px;
+      margin-right: 6px;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+      border: 1px solid #1f2a3a;
+    }
+
+    .overlay {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .hidden { display: none; }
+
+    .big { font-size: 22px; font-weight: bold; }
     .muted { color: #a7b4c8; }
-    .big { font-size: 22px; font-weight: 700; }
     .ok { color: #79e28a; }
     .warn { color: #f5d06f; }
     .bad { color: #ff7a7a; }
-    .videoWrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid #1f2a3a; background: #000; }
-    video { width: 100%; height: auto; display: block; }
-    .overlay {
-      position: absolute; inset: 0; pointer-events: none;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .marker {
-      pointer-events: auto;
-      background: rgba(20, 30, 45, 0.88);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 20px;
-      padding: 14px 16px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-      backdrop-filter: blur(6px);
-      max-width: 320px;
-    }
-    .marker .icon {
-      width: 74px; height: 74px; margin: 0 auto 10px auto;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, rgba(120,226,138,0.9), rgba(42,109,244,0.25));
-      border: 1px solid rgba(121,226,138,0.45);
-      box-shadow: 0 0 26px rgba(121,226,138,0.25);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 34px;
-    }
-    .marker button { margin-top: 10px; pointer-events: auto; }
-    .divider { height: 1px; background: #1f2a3a; margin: 10px 0; }
-    input[type="text"] {
-      width: 100%;
-      background: #0b0f14; border: 1px solid #1f2a3a; color: #e8eef7;
-      padding: 10px 12px; border-radius: 12px; font-size: 15px;
-    }
-    .small { font-size: 13px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="card">
-      <div class="row" style="justify-content: space-between;">
-        <div>
-          <div class="big">Hunt Mode</div>
-          <div class="muted">Invisible marker: <span class="pill">Ablution Entrance</span></div>
-        </div>
-        <div class="pill mono" id="httpsState"></div>
-      </div>
+<div class="wrap">
 
-      <div class="divider"></div>
+  <div class="card">
+    <div class="big">Mystery Rally – Hunt Mode</div>
+    <div class="muted">Westown Launch → Final Destination</div>
+    <p>
+      You have reached the launch point.  
+      When safely parked, press the button below to begin your guided journey.
+    </p>
+    <button id="startBtn">Begin the Hunt</button>
+    <button id="resetBtn" class="danger">Reset Device Lock</button>
+  </div>
 
-      <div id="lockState" class="muted"></div>
-
-      <div class="row" style="margin-top: 10px;">
-        <button id="btnStart">Enable Hunt Mode</button>
-        <button class="secondary" id="btnRecal" disabled>Recalibrate</button>
-        <button class="danger" id="btnReset" title="Use only if you want to re-test on the same device.">Reset Device Lock</button>
-      </div>
-
-      <div style="margin-top: 10px;">
-        <div id="status" class="muted">Press “Enable Hunt Mode” to begin.</div>
-        <div class="row" style="margin-top: 10px;">
-          <div class="pill">Distance: <span id="dist">—</span></div>
-          <div class="pill">Heading: <span id="heading">—</span></div>
-          <div class="pill">Within 15m: <span id="within">—</span></div>
-        </div>
-        <div class="small muted" style="margin-top: 10px;">
-          Tip: If the marker doesn’t appear at the exact spot, walk slowly for a few seconds to allow GPS to settle.
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="videoWrap">
-        <video id="video" playsinline autoplay muted></video>
-        <div class="overlay" id="overlay" style="display:none;">
-          <div class="marker">
-            <div class="icon">🜁</div>
-            <div class="big ok">Clue Nearby</div>
-            <div class="muted">Tap to reveal the message.</div>
-            <button id="btnReveal">Reveal Clue</button>
-            <div class="small muted" style="margin-top:8px;">
-              (Visible only within <b>15 m</b>)
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="clueCard" style="display:none;">
-      <div class="big">Clue Unlocked</div>
-      <div class="muted" style="margin-top:6px;">Audio will autoplay; if blocked, press play.</div>
-
-      <div style="margin-top:12px;">
-        <audio id="audio" controls preload="auto">
-          <!-- Replace with your file path -->
-          <source src="ablution_clue.wav" type="audio/wav">
-          Your browser does not support the audio element.
-        </audio>
-      </div>
-
-      <div style="margin-top:12px; line-height: 1.5;">
-        <!-- Replace with your clue text -->
-        <div id="clueText">
-          <b>The Ablution Entrance Whispers:</b><br/>
-          “Clean hands. Dirty secrets. Someone washed away the evidence… but not the truth.”
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <div class="small muted mono" id="debugLog"></div>
-    </div>
-
-    <div class="card small muted">
-      <b>Privacy note:</b> Location, motion, and camera permissions are used only for this Hunt Mode session. No data is uploaded in this prototype.
+  <div class="card">
+    <div id="status" class="muted">Waiting to begin…</div>
+    <div style="margin-top:10px;">
+      <span class="pill">Distance: <span id="distance">—</span></span>
+      <span class="pill">Within range: <span id="within">—</span></span>
     </div>
   </div>
 
+  <div class="card">
+    <video id="video" autoplay playsinline muted></video>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="big ok">You Have Arrived</div>
+      <p>Tap below to reveal your final message.</p>
+      <button id="revealBtn">Reveal Destination</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="clueCard">
+    <div class="big">Final Reveal</div>
+
+    <audio id="audio" controls>
+      <source src="assets/ablution_clue.wav" type="audio/wav">
+    </audio>
+
+    <p style="margin-top:12px;">
+      <b>Welcome to Gibaland.</b><br><br>
+      You have solved the Mystery Rally.<br>
+      Please proceed to reception and enjoy your rally weekend.
+    </p>
+  </div>
+
+  <div class="card muted">
+    Passenger to operate Hunt Mode. Driver must not use phone while driving.
+  </div>
+
+</div>
+
 <script>
-(() => {
-  // ===== CONFIG =====
-  const MARKER = {
-    name: "Ablution Entrance",
-    lat: -29.794818984001328,
-    lng: 31.021696603678024,
-    radiusM: 15
-  };
+const DESTINATION = {
+  lat: -29.824306666522848,
+  lng: 30.77586882598832,
+  radius: 100
+};
 
-  const LOCK_KEY = "twd_marker_ablution_claimed_v1";
-  const POLL_MS_FAR = 2500;
-  const POLL_MS_NEAR = 5000;
+const LOCK_KEY = "mystery_rally_final_claimed";
 
-  // ===== UI =====
-  const el = (id) => document.getElementById(id);
-  const btnStart = el("btnStart");
-  const btnRecal = el("btnRecal");
-  const btnReset = el("btnReset");
-  const btnReveal = el("btnReveal");
+const statusEl = document.getElementById("status");
+const distanceEl = document.getElementById("distance");
+const withinEl = document.getElementById("within");
+const overlay = document.getElementById("overlay");
+const clueCard = document.getElementById("clueCard");
+const audio = document.getElementById("audio");
 
-  const status = el("status");
-  const distEl = el("dist");
-  const headingEl = el("heading");
-  const withinEl = el("within");
-  const overlay = el("overlay");
-  const clueCard = el("clueCard");
-  const audio = el("audio");
-  const debugLog = el("debugLog");
-  const lockState = el("lockState");
-  const video = el("video");
-  const httpsState = el("httpsState");
+const startBtn = document.getElementById("startBtn");
+const revealBtn = document.getElementById("revealBtn");
+const resetBtn = document.getElementById("resetBtn");
+const video = document.getElementById("video");
 
-  // ===== STATE =====
-  let watchId = null;
-  let lastPos = null;
-  let lastHeading = null;
-  let hasCamera = false;
-  let hasMotion = false;
-  let isWithin = false;
-  let ticking = false;
-  let pollTimer = null;
+let watchId = null;
+let isWithin = false;
 
-  // ===== HELPERS =====
-  function isSecure() {
-    return window.isSecureContext && location.protocol === "https:";
-  }
+function distanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2-lat1);
+  const dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 +
+    Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
-  function setStatus(msg, cls) {
-    status.className = cls ? cls : "muted";
-    status.textContent = msg;
-  }
+function startCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => video.srcObject = stream);
+}
 
-  function setDebug(msg) {
-    debugLog.textContent = msg;
-  }
-
-  function formatM(m) {
-    if (m == null || !isFinite(m)) return "—";
-    return `${Math.round(m)} m`;
-  }
-
-  function formatDeg(d) {
-    if (d == null || !isFinite(d)) return "—";
-    const v = (Math.round(d) + 360) % 360;
-    return `${v}°`;
-  }
-
-  // Haversine distance (meters)
-  function distanceMeters(lat1, lon1, lat2, lon2) {
-    const R = 6371000;
-    const toRad = (x) => x * Math.PI / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
-
-  function updateLockUI() {
-    const claimed = localStorage.getItem(LOCK_KEY) === "1";
-    if (claimed) {
-      lockState.innerHTML = `<span class="bad"><b>Device locked:</b></span> this clue has already been claimed on this phone.`;
-    } else {
-      lockState.innerHTML = `<span class="ok"><b>Available:</b></span> clue not yet claimed on this phone.`;
-    }
-  }
-
-  function showOverlay(show) {
-    overlay.style.display = show ? "flex" : "none";
-  }
-
-  function showClue(show) {
-    clueCard.style.display = show ? "block" : "none";
-  }
-
-  function claimed() {
-    return localStorage.getItem(LOCK_KEY) === "1";
-  }
-
-  // ===== PERMISSIONS =====
-  async function requestLocation() {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error("Geolocation not supported."));
-      setStatus("Requesting location permission…", "muted");
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolve(pos),
-        (err) => reject(err),
-        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-      );
-    });
-  }
-
-  async function startLocationWatch() {
-    if (!navigator.geolocation) throw new Error("Geolocation not supported.");
-
-    if (watchId != null) navigator.geolocation.clearWatch(watchId);
-
-    watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        lastPos = pos;
-        if (!ticking) {
-          ticking = true;
-          requestAnimationFrame(() => {
-            ticking = false;
-            computeAndRender();
-          });
-        }
-      },
-      (err) => {
-        setStatus("Location error. Try Recalibrate, or check permissions.", "bad");
-        setDebug(`Location error: ${err.code} ${err.message}`);
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+function startLocationWatch() {
+  watchId = navigator.geolocation.watchPosition(pos => {
+    const d = distanceMeters(
+      pos.coords.latitude,
+      pos.coords.longitude,
+      DESTINATION.lat,
+      DESTINATION.lng
     );
-  }
 
-  async function requestCamera() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error("Camera not supported.");
-    }
-    setStatus("Requesting camera permission…", "muted");
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" },
-      audio: false
-    });
-    video.srcObject = stream;
-    hasCamera = true;
-  }
+    distanceEl.textContent = Math.round(d) + " m";
 
-  async function requestMotionIfNeeded() {
-    // Compass is optional; we use it only for display (and potential future arrow guidance).
-    // iOS requires explicit user gesture + permission request.
-    try {
-      if (typeof DeviceOrientationEvent === "undefined") return false;
-
-      // iOS 13+ permission model:
-      if (typeof DeviceOrientationEvent.requestPermission === "function") {
-        setStatus("Requesting motion/compass permission…", "muted");
-        const res = await DeviceOrientationEvent.requestPermission();
-        if (res !== "granted") return false;
-      }
-
-      window.addEventListener("deviceorientation", onOrientation, true);
-      hasMotion = true;
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function onOrientation(ev) {
-    // iOS often provides webkitCompassHeading. Others provide alpha.
-    if (typeof ev.webkitCompassHeading === "number") {
-      lastHeading = ev.webkitCompassHeading; // 0..360
-    } else if (typeof ev.alpha === "number") {
-      // alpha is 0..360 relative to device; approximate
-      lastHeading = 360 - ev.alpha;
+    if (d <= DESTINATION.radius) {
+      isWithin = true;
+      withinEl.textContent = "YES";
+      overlay.classList.remove("hidden");
+      statusEl.textContent = "You are at the destination.";
     } else {
-      lastHeading = null;
-    }
-    headingEl.textContent = formatDeg(lastHeading);
-  }
-
-  // ===== CORE LOGIC =====
-  function computeAndRender() {
-    if (!lastPos) return;
-
-    const { latitude, longitude, accuracy } = lastPos.coords;
-    const d = distanceMeters(latitude, longitude, MARKER.lat, MARKER.lng);
-
-    distEl.textContent = formatM(d);
-    const within = d <= MARKER.radiusM;
-    withinEl.textContent = within ? "YES" : "NO";
-    withinEl.className = within ? "ok" : "warn";
-    isWithin = within;
-
-    // Show overlay only when within range AND not claimed
-    showOverlay(isWithin && !claimed());
-    // If claimed already, ensure clue display remains available (optional)
-    if (claimed()) {
-      setStatus("This clue has already been claimed on this device.", "bad");
-    } else if (isWithin) {
-      setStatus("Clue is within range. Open the camera view and tap Reveal.", "ok");
-    } else {
-      setStatus(`Move closer to the ${MARKER.name}. (GPS accuracy: ~${Math.round(accuracy)} m)`, "muted");
+      isWithin = false;
+      withinEl.textContent = "NO";
+      overlay.classList.add("hidden");
+      statusEl.textContent = "Follow your route toward the final destination.";
     }
 
-    setDebug(`Marker: ${MARKER.lat.toFixed(6)}, ${MARKER.lng.toFixed(6)} | You: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} | GPS acc ~${Math.round(accuracy)}m`);
-    adjustPolling(d, accuracy);
-  }
+  }, err => {
+    statusEl.textContent = "Location error. Please enable GPS.";
+  }, { enableHighAccuracy: true });
+}
 
-  function adjustPolling(distance, accuracy) {
-    // Simple adaptive refresh cadence (saves battery).
-    const near = (distance <= 40) || (accuracy <= 15);
-    const ms = near ? POLL_MS_FAR : POLL_MS_NEAR;
+startBtn.onclick = async () => {
+  statusEl.textContent = "Starting Hunt Mode…";
+  await startCamera();
+  startLocationWatch();
+};
 
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(() => {
-      if (lastPos) computeAndRender();
-    }, ms);
-  }
+revealBtn.onclick = () => {
+  if (localStorage.getItem(LOCK_KEY) === "1") return;
+  localStorage.setItem(LOCK_KEY, "1");
+  clueCard.classList.remove("hidden");
+  audio.play();
+};
 
-  // ===== ACTIONS =====
-  async function startAll() {
-    if (!isSecure()) {
-      setStatus("This page must be served over HTTPS for camera/motion permissions.", "bad");
-      return;
-    }
-
-    updateLockUI();
-
-    try {
-      // 1) Location
-      await requestLocation();
-      await startLocationWatch();
-
-      // 2) Camera
-      await requestCamera();
-
-      // 3) Motion/compass (optional)
-      const motionGranted = await requestMotionIfNeeded();
-      headingEl.textContent = motionGranted ? formatDeg(lastHeading) : "—";
-
-      btnRecal.disabled = false;
-
-      setStatus("Hunt Mode enabled. Walk toward the ablution entrance.", "ok");
-    } catch (e) {
-      setStatus("Could not start Hunt Mode. Check permissions and try again.", "bad");
-      setDebug(String(e && e.message ? e.message : e));
-    }
-  }
-
-  function recalibrate() {
-    setStatus("Recalibrating… please stand still for a few seconds.", "muted");
-    // Re-run permissionless parts:
-    computeAndRender();
-  }
-
-  function resetLock() {
-    localStorage.removeItem(LOCK_KEY);
-    updateLockUI();
-    showOverlay(isWithin && !claimed());
-    showClue(false);
-    setStatus("Device lock reset. You may reveal again (for testing).", "warn");
-  }
-
-  async function reveal() {
-    if (claimed()) {
-      setStatus("Already claimed on this device.", "bad");
-      return;
-    }
-    if (!isWithin) {
-      setStatus("You are not within 15m yet. Move closer.", "warn");
-      return;
-    }
-
-    // Lock device
-    localStorage.setItem(LOCK_KEY, "1");
-    updateLockUI();
-    showOverlay(false);
-    showClue(true);
-
-    try {
-      // Attempt autoplay (may be blocked until user gesture; this is called by a click so should work)
-      await audio.play();
-      setStatus("Clue revealed.", "ok");
-    } catch (e) {
-      setStatus("Clue revealed. Press play if audio did not autoplay.", "warn");
-    }
-  }
-
-  // ===== INIT =====
-  httpsState.textContent = isSecure() ? "HTTPS OK" : "HTTPS REQUIRED";
-  httpsState.className = isSecure() ? "pill ok" : "pill bad";
-
-  updateLockUI();
-
-  btnStart.addEventListener("click", startAll);
-  btnRecal.addEventListener("click", recalibrate);
-  btnReset.addEventListener("click", resetLock);
-  btnReveal.addEventListener("click", reveal);
-
-  // If already claimed, still allow camera view for immersion; optional.
-})();
+resetBtn.onclick = () => {
+  localStorage.removeItem(LOCK_KEY);
+  clueCard.classList.add("hidden");
+  statusEl.textContent = "Device lock reset.";
+};
 </script>
+
 </body>
 </html>
-
