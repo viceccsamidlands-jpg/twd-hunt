@@ -5,126 +5,79 @@
   <title>Mystery Rally – Hunt Mode</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b0f14;
-      color: #e8eef7;
-    }
-    .wrap {
-      max-width: 900px;
-      margin: auto;
-      padding: 16px;
-    }
-    .card {
-      background: #121824;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 14px;
-      border: 1px solid #1f2a3a;
-    }
+    body { margin:0; font-family: Arial, sans-serif; background:#0b0f14; color:#e8eef7; }
+    .wrap { max-width: 900px; margin:auto; padding:16px; }
+    .card { background:#121824; border-radius:14px; padding:16px; margin-bottom:14px; border:1px solid #1f2a3a; }
+    .big { font-size:22px; font-weight:bold; }
+    .muted { color:#a7b4c8; }
+    .ok { color:#79e28a; }
+    .warn { color:#f5d06f; }
+    .bad { color:#ff7a7a; }
+
     button {
-      background: #2a6df4;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 16px;
-      cursor: pointer;
+      background:#2a6df4; color:white; border:none; border-radius:10px;
+      padding:12px 16px; font-size:16px; cursor:pointer; margin-right:10px; margin-top:8px;
     }
-    button.secondary { background: #223149; }
-    button.danger { background: #b23b3b; }
+    button.secondary { background:#223149; }
+    button.danger { background:#b23b3b; }
 
     .pill {
-      display: inline-block;
-      padding: 6px 10px;
-      background: #223149;
-      border-radius: 999px;
-      margin-right: 6px;
+      display:inline-block; padding:6px 10px; background:#223149; border-radius:999px; margin-right:6px; margin-top:8px;
     }
 
-    /* Camera wrapper to allow overlays */
     .videoWrap {
       position: relative;
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid #1f2a3a;
-      background: #000;
+      background:#000;
       margin-top: 10px;
     }
+    video { width:100%; display:block; }
 
-    video {
-      width: 100%;
-      display: block;
-    }
-
-    .overlay {
-      text-align: center;
-      margin-top: 10px;
-    }
-
-    .hidden { display: none; }
-
-    .big { font-size: 22px; font-weight: bold; }
-    .muted { color: #a7b4c8; }
-    .ok { color: #79e28a; }
-    .warn { color: #f5d06f; }
-    .bad { color: #ff7a7a; }
+    .hidden { display:none; }
 
     /* Arrow HUD */
     .arrowHud {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      display: flex;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 5;
+      position:absolute; top:12px; left:12px; right:12px;
+      display:flex; justify-content:center; pointer-events:none; z-index:5;
     }
     .arrowBadge {
-      background: rgba(18, 24, 36, 0.85);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 10px 12px;
-      display: inline-flex;
-      gap: 10px;
-      align-items: center;
+      background: rgba(18,24,36,0.85);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:14px;
+      padding:10px 12px;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
       backdrop-filter: blur(6px);
     }
     .arrowIcon {
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      display: grid;
-      place-items: center;
-      font-size: 26px;
+      width:44px; height:44px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      display:grid; place-items:center;
+      font-size:26px;
       transform: rotate(0deg);
       transition: transform 120ms linear;
-      color: #e8eef7;
+      color:#e8eef7;
     }
-    .arrowText {
-      font-size: 14px;
-      color: #a7b4c8;
-      line-height: 1.25;
-    }
-    .arrowText b { color: #e8eef7; }
+    .arrowText { font-size:14px; color:#a7b4c8; line-height:1.25; }
+    .arrowText b { color:#e8eef7; }
 
-    /* Arrival overlay (kept as your original block, but positioned for camera) */
-    .arrivalBox {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      background: rgba(18, 24, 36, 0.88);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 14px 12px;
-      text-align: center;
+    /* Arrival / checkpoint prompt */
+    .promptBox {
+      position:absolute; left:12px; right:12px; bottom:12px;
+      background: rgba(18,24,36,0.88);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:14px;
+      padding:14px 12px;
+      text-align:center;
       backdrop-filter: blur(6px);
-      z-index: 6;
+      z-index:6;
     }
+
+    hr { border:0; border-top:1px solid #1f2a3a; margin:12px 0; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   </style>
 </head>
 
@@ -133,23 +86,42 @@
 
   <div class="card">
     <div class="big">Mystery Rally – Hunt Mode</div>
-    <div class="muted">Westown Launch → Final Destination</div>
-    <p>
-      You have reached the launch point.
-      When safely parked, press the button below to begin your guided journey.
+    <div class="muted">Launch → Checkpoints → Final Reveal</div>
+    <p class="muted" style="margin-top:10px;">
+      When safely parked at the launch point, press <b>Begin</b>.
+      The system will guide you along the approved towing route using hidden checkpoints.
     </p>
-    <button id="startBtn">Begin the Hunt</button>
-    <button id="resetBtn" class="danger">Reset Device Lock</button>
+
+    <button id="startBtn">Begin</button>
+    <button id="mapsBtn" class="secondary">Open Next Checkpoint in Google Maps</button>
+    <button id="resetProgressBtn" class="danger">Reset Progress</button>
+    <button id="resetLockBtn" class="danger">Reset Device Lock</button>
+
+    <hr />
+
+    <div class="muted" style="font-size:13px;">
+      Passenger to operate. Driver must not use phone while driving.
+    </div>
   </div>
 
   <div class="card">
     <div id="status" class="muted">Waiting to begin…</div>
+
     <div style="margin-top:10px;">
+      <span class="pill">Stage: <span id="stage">—</span></span>
       <span class="pill">Distance: <span id="distance">—</span></span>
       <span class="pill">Within range: <span id="within">—</span></span>
     </div>
-    <div class="muted" style="margin-top:10px; font-size: 13px;">
-      Tip: Hold the phone steady for a better direction arrow. If the arrow does not appear, continue using distance.
+
+    <div style="margin-top:10px;" class="muted">
+      <div><b>Current Target:</b> <span id="targetName">—</span></div>
+      <div class="mono" style="margin-top:6px; font-size:12px;">
+        Target GPS: <span id="targetGps">—</span>
+      </div>
+    </div>
+
+    <div class="muted" style="margin-top:10px; font-size:13px;">
+      Tip: If the arrow does not appear, continue using the distance reading. Hold the phone steady for best results.
     </div>
   </div>
 
@@ -157,7 +129,6 @@
     <div class="videoWrap">
       <video id="video" autoplay playsinline muted></video>
 
-      <!-- Arrow HUD -->
       <div class="arrowHud hidden" id="arrowHud">
         <div class="arrowBadge">
           <div class="arrowIcon" id="arrowIcon">➤</div>
@@ -168,16 +139,17 @@
         </div>
       </div>
 
-      <!-- Arrival overlay -->
-      <div id="overlay" class="arrivalBox hidden">
-        <div class="big ok">You Have Arrived</div>
-        <p style="margin: 8px 0 10px 0;">Tap below to reveal your final message.</p>
-        <button id="revealBtn">Reveal Destination</button>
+      <div id="checkpointPrompt" class="promptBox hidden">
+        <div class="big ok" id="promptTitle">Checkpoint Reached</div>
+        <p style="margin: 8px 0 10px 0;" id="promptText">
+          Tap below to confirm and unlock the next checkpoint.
+        </p>
+        <button id="confirmBtn">Confirm & Continue</button>
       </div>
     </div>
   </div>
 
-  <div class="card hidden" id="clueCard">
+  <div class="card hidden" id="finalCard">
     <div class="big">Final Reveal</div>
 
     <audio id="audio" controls>
@@ -191,45 +163,93 @@
     </p>
   </div>
 
-  <div class="card muted">
-    Passenger to operate Hunt Mode. Driver must not use phone while driving.
-  </div>
-
 </div>
 
 <script>
-const DESTINATION = {
-  lat: -29.824306666522848,
-  lng: 30.77586882598832,
-  radius: 100
-};
+/* ==============================
+   CONFIG
+============================== */
 
-const LOCK_KEY = "mystery_rally_final_claimed";
+// Route-locked checkpoints (your coordinates)
+const CHECKPOINTS = [
+  { id: "CP1", name: "Checkpoint 1", lat: -29.807238591373174, lng: 30.747804204036417, radius: 140 },
+  { id: "CP2", name: "Checkpoint 2", lat: -29.83459372308169,  lng: 30.78418203146872,  radius: 140 },
+  { id: "CP3", name: "Checkpoint 3", lat: -29.83283660010886,  lng: 30.790333586982523, radius: 140 },
+  { id: "CP4", name: "Checkpoint 4", lat: -29.834303497622457, lng: 30.79023325169056,  radius: 140 },
+  { id: "CP5", name: "Checkpoint 5", lat: -29.82846034830353,  lng: 30.78796680059241,  radius: 140 },
 
+  // FINAL destination (kept hidden until the end)
+  { id: "FINAL", name: "Final Destination", lat: -29.824306666522848, lng: 30.77586882598832, radius: 110, isFinal: true }
+];
+
+// Storage keys
+const PROGRESS_KEY = "mystery_rally_progress_index";   // integer 0..CHECKPOINTS.length-1
+const FINAL_LOCK_KEY = "mystery_rally_final_claimed";  // "1" once revealed
+
+/* ==============================
+   UI ELEMENTS
+============================== */
 const statusEl = document.getElementById("status");
+const stageEl = document.getElementById("stage");
 const distanceEl = document.getElementById("distance");
 const withinEl = document.getElementById("within");
-const overlay = document.getElementById("overlay");
-const clueCard = document.getElementById("clueCard");
-const audio = document.getElementById("audio");
+const targetNameEl = document.getElementById("targetName");
+const targetGpsEl = document.getElementById("targetGps");
 
 const startBtn = document.getElementById("startBtn");
-const revealBtn = document.getElementById("revealBtn");
-const resetBtn = document.getElementById("resetBtn");
-const video = document.getElementById("video");
+const mapsBtn = document.getElementById("mapsBtn");
+const resetProgressBtn = document.getElementById("resetProgressBtn");
+const resetLockBtn = document.getElementById("resetLockBtn");
 
-/* Arrow UI */
+const video = document.getElementById("video");
 const arrowHud = document.getElementById("arrowHud");
 const arrowIcon = document.getElementById("arrowIcon");
 const headingOut = document.getElementById("heading");
 const bearingOut = document.getElementById("bearing");
 
-let watchId = null;
-let isWithin = false;
+const checkpointPrompt = document.getElementById("checkpointPrompt");
+const promptTitle = document.getElementById("promptTitle");
+const promptText = document.getElementById("promptText");
+const confirmBtn = document.getElementById("confirmBtn");
 
-let currentHeading = null; // 0..360
-let currentBearing = null; // 0..360
+const finalCard = document.getElementById("finalCard");
+const audio = document.getElementById("audio");
+
+/* ==============================
+   STATE
+============================== */
+let watchId = null;
+let running = false;
+
+let currentHeading = null; // degrees 0..360
+let currentBearing = null; // degrees 0..360
 let compassEnabled = false;
+
+let currentIndex = loadProgressIndex(); // 0..n-1
+
+/* ==============================
+   HELPERS
+============================== */
+function clampIndex(i) {
+  if (!Number.isFinite(i)) return 0;
+  return Math.max(0, Math.min(CHECKPOINTS.length - 1, i));
+}
+
+function loadProgressIndex() {
+  const raw = localStorage.getItem(PROGRESS_KEY);
+  const n = parseInt(raw, 10);
+  return clampIndex(Number.isFinite(n) ? n : 0);
+}
+
+function saveProgressIndex(i) {
+  currentIndex = clampIndex(i);
+  localStorage.setItem(PROGRESS_KEY, String(currentIndex));
+}
+
+function formatDeg(d) {
+  if (d == null || !isFinite(d)) return "—";
+  return Math.round(d) + "°";
+}
 
 function distanceMeters(lat1, lon1, lat2, lon2) {
   const R = 6371000;
@@ -256,9 +276,20 @@ function bearingDegrees(lat1, lon1, lat2, lon2) {
   return (toDeg(θ) + 360) % 360;
 }
 
-function formatDeg(d) {
-  if (d == null || !isFinite(d)) return "—";
-  return Math.round(d) + "°";
+function getTarget() {
+  return CHECKPOINTS[currentIndex];
+}
+
+function updateTargetUI() {
+  const t = getTarget();
+  stageEl.textContent = `${currentIndex + 1} / ${CHECKPOINTS.length}`;
+  targetNameEl.textContent = t.isFinal ? "Final Stage" : t.name;
+  targetGpsEl.textContent = `${t.lat.toFixed(6)}, ${t.lng.toFixed(6)}`;
+
+  // Keep final destination name hidden until reveal
+  if (t.isFinal && localStorage.getItem(FINAL_LOCK_KEY) !== "1") {
+    targetNameEl.textContent = "Final Stage (Hidden)";
+  }
 }
 
 function updateArrowUI() {
@@ -266,12 +297,10 @@ function updateArrowUI() {
     arrowHud.classList.add("hidden");
     return;
   }
-
   arrowHud.classList.remove("hidden");
   headingOut.textContent = formatDeg(currentHeading);
   bearingOut.textContent = formatDeg(currentBearing);
 
-  // Arrow rotation to point toward destination relative to phone heading
   const rotation = (currentBearing - currentHeading + 360) % 360;
   arrowIcon.style.transform = `rotate(${rotation}deg)`;
 }
@@ -282,8 +311,6 @@ async function enableCompass() {
       compassEnabled = false;
       return false;
     }
-
-    // iOS 13+ requires explicit permission
     if (typeof DeviceOrientationEvent.requestPermission === "function") {
       const res = await DeviceOrientationEvent.requestPermission();
       if (res !== "granted") {
@@ -291,13 +318,10 @@ async function enableCompass() {
         return false;
       }
     }
-
     window.addEventListener("deviceorientation", (ev) => {
-      // iOS Safari (best)
       if (typeof ev.webkitCompassHeading === "number") {
-        currentHeading = ev.webkitCompassHeading; // 0..360, 0 = north
+        currentHeading = ev.webkitCompassHeading;
       } else if (typeof ev.alpha === "number") {
-        // Android/others (approx)
         currentHeading = (360 - ev.alpha) % 360;
       } else {
         currentHeading = null;
@@ -307,7 +331,7 @@ async function enableCompass() {
 
     compassEnabled = true;
     return true;
-  } catch (e) {
+  } catch {
     compassEnabled = false;
     return false;
   }
@@ -318,62 +342,141 @@ function startCamera() {
     .then(stream => { video.srcObject = stream; });
 }
 
+function showPrompt(title, text) {
+  promptTitle.textContent = title;
+  promptText.textContent = text;
+  checkpointPrompt.classList.remove("hidden");
+}
+
+function hidePrompt() {
+  checkpointPrompt.classList.add("hidden");
+}
+
+function showFinalIfUnlocked() {
+  if (localStorage.getItem(FINAL_LOCK_KEY) === "1") {
+    finalCard.classList.remove("hidden");
+  } else {
+    finalCard.classList.add("hidden");
+  }
+}
+
+function openNextCheckpointInGoogleMaps() {
+  const t = getTarget();
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}&travelmode=driving`;
+  window.open(url, "_blank");
+}
+
+/* ==============================
+   GPS WATCH
+============================== */
 function startLocationWatch() {
-  watchId = navigator.geolocation.watchPosition(pos => {
+  if (watchId != null) navigator.geolocation.clearWatch(watchId);
+
+  watchId = navigator.geolocation.watchPosition((pos) => {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
 
-    const d = distanceMeters(lat, lng, DESTINATION.lat, DESTINATION.lng);
-    distanceEl.textContent = Math.round(d) + " m";
+    const t = getTarget();
+    const d = distanceMeters(lat, lng, t.lat, t.lng);
 
-    currentBearing = bearingDegrees(lat, lng, DESTINATION.lat, DESTINATION.lng);
+    distanceEl.textContent = Math.round(d) + " m";
+    currentBearing = bearingDegrees(lat, lng, t.lat, t.lng);
     updateArrowUI();
 
-    if (d <= DESTINATION.radius) {
-      isWithin = true;
-      withinEl.textContent = "YES";
-      overlay.classList.remove("hidden");
-      statusEl.textContent = "You are at the destination.";
+    const inRange = d <= t.radius;
+    withinEl.textContent = inRange ? "YES" : "NO";
+
+    if (!running) return;
+
+    // Only prompt when in range; do NOT auto-advance (prevents accidental skipping)
+    if (inRange) {
+      if (t.isFinal) {
+        showPrompt("Final Stage Reached", "Tap to confirm and unlock the final reveal.");
+        statusEl.textContent = "You are at the final stage.";
+      } else {
+        showPrompt("Checkpoint Reached", "Tap to confirm and unlock the next checkpoint.");
+        statusEl.textContent = "Checkpoint reached. Confirm to continue.";
+      }
     } else {
-      isWithin = false;
-      withinEl.textContent = "NO";
-      overlay.classList.add("hidden");
-      statusEl.textContent = "Follow your route toward the final destination.";
+      hidePrompt();
+      statusEl.textContent = "Proceed to the next checkpoint (approved route).";
     }
 
-  }, err => {
+  }, (err) => {
     statusEl.textContent = "Location error. Please enable GPS and allow location access.";
   }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
 }
 
+/* ==============================
+   BUTTONS / ACTIONS
+============================== */
 startBtn.onclick = async () => {
-  statusEl.textContent = "Starting Hunt Mode… (allow Location, Camera, and Motion if prompted)";
+  statusEl.textContent = "Starting… allow Location, Camera, and Motion if prompted.";
+  updateTargetUI();
+  showFinalIfUnlocked();
+
   try {
     await startCamera();
-  } catch (e) {
+  } catch {
     statusEl.textContent = "Camera permission denied. Please allow camera access and try again.";
     return;
   }
 
-  // Compass is optional – if denied, the arrow will remain hidden and distance still works.
+  // Compass optional
   await enableCompass();
 
+  running = true;
   startLocationWatch();
-  statusEl.textContent = "Hunt Mode active. Use distance (and arrow if available) to guide you.";
+  statusEl.textContent = "Active. Follow the approved route to the next checkpoint.";
 };
 
-revealBtn.onclick = () => {
-  if (localStorage.getItem(LOCK_KEY) === "1") return;
-  localStorage.setItem(LOCK_KEY, "1");
-  clueCard.classList.remove("hidden");
-  audio.play().catch(() => {/* user can press play */});
+mapsBtn.onclick = () => {
+  openNextCheckpointInGoogleMaps();
 };
 
-resetBtn.onclick = () => {
-  localStorage.removeItem(LOCK_KEY);
-  clueCard.classList.add("hidden");
-  statusEl.textContent = "Device lock reset.";
+confirmBtn.onclick = () => {
+  const t = getTarget();
+
+  // Confirm current stage and advance
+  if (t.isFinal) {
+    // Unlock final reveal
+    if (localStorage.getItem(FINAL_LOCK_KEY) !== "1") {
+      localStorage.setItem(FINAL_LOCK_KEY, "1");
+      showFinalIfUnlocked();
+      audio.play().catch(() => {/* user can press play */});
+    }
+    hidePrompt();
+    statusEl.textContent = "Final reveal unlocked.";
+    updateTargetUI();
+    return;
+  }
+
+  // Move to next checkpoint
+  saveProgressIndex(currentIndex + 1);
+  updateTargetUI();
+  hidePrompt();
+  statusEl.textContent = "Next checkpoint unlocked. Proceed along the approved route.";
 };
+
+resetProgressBtn.onclick = () => {
+  saveProgressIndex(0);
+  hidePrompt();
+  updateTargetUI();
+  statusEl.textContent = "Progress reset to the first checkpoint.";
+};
+
+resetLockBtn.onclick = () => {
+  localStorage.removeItem(FINAL_LOCK_KEY);
+  showFinalIfUnlocked();
+  statusEl.textContent = "Final reveal lock reset.";
+};
+
+/* ==============================
+   INIT
+============================== */
+updateTargetUI();
+showFinalIfUnlocked();
+statusEl.textContent = "Waiting to begin…";
 </script>
 
 </body>
