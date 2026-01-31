@@ -43,11 +43,19 @@
       margin-right: 6px;
     }
 
+    /* Camera wrapper to allow overlays */
+    .videoWrap {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #1f2a3a;
+      background: #000;
+      margin-top: 10px;
+    }
+
     video {
       width: 100%;
-      border-radius: 12px;
-      margin-top: 10px;
-      border: 1px solid #1f2a3a;
+      display: block;
     }
 
     .overlay {
@@ -62,6 +70,61 @@
     .ok { color: #79e28a; }
     .warn { color: #f5d06f; }
     .bad { color: #ff7a7a; }
+
+    /* Arrow HUD */
+    .arrowHud {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .arrowBadge {
+      background: rgba(18, 24, 36, 0.85);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      backdrop-filter: blur(6px);
+    }
+    .arrowIcon {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      transform: rotate(0deg);
+      transition: transform 120ms linear;
+      color: #e8eef7;
+    }
+    .arrowText {
+      font-size: 14px;
+      color: #a7b4c8;
+      line-height: 1.25;
+    }
+    .arrowText b { color: #e8eef7; }
+
+    /* Arrival overlay (kept as your original block, but positioned for camera) */
+    .arrivalBox {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      background: rgba(18, 24, 36, 0.88);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      z-index: 6;
+    }
   </style>
 </head>
 
@@ -72,7 +135,7 @@
     <div class="big">Mystery Rally – Hunt Mode</div>
     <div class="muted">Westown Launch → Final Destination</div>
     <p>
-      You have reached the launch point.  
+      You have reached the launch point.
       When safely parked, press the button below to begin your guided journey.
     </p>
     <button id="startBtn">Begin the Hunt</button>
@@ -85,15 +148,32 @@
       <span class="pill">Distance: <span id="distance">—</span></span>
       <span class="pill">Within range: <span id="within">—</span></span>
     </div>
+    <div class="muted" style="margin-top:10px; font-size: 13px;">
+      Tip: Hold the phone steady for a better direction arrow. If the arrow does not appear, continue using distance.
+    </div>
   </div>
 
   <div class="card">
-    <video id="video" autoplay playsinline muted></video>
+    <div class="videoWrap">
+      <video id="video" autoplay playsinline muted></video>
 
-    <div id="overlay" class="overlay hidden">
-      <div class="big ok">You Have Arrived</div>
-      <p>Tap below to reveal your final message.</p>
-      <button id="revealBtn">Reveal Destination</button>
+      <!-- Arrow HUD -->
+      <div class="arrowHud hidden" id="arrowHud">
+        <div class="arrowBadge">
+          <div class="arrowIcon" id="arrowIcon">➤</div>
+          <div class="arrowText">
+            <b>Direction</b><br/>
+            Heading: <span id="heading">—</span> · Bearing: <span id="bearing">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrival overlay -->
+      <div id="overlay" class="arrivalBox hidden">
+        <div class="big ok">You Have Arrived</div>
+        <p style="margin: 8px 0 10px 0;">Tap below to reveal your final message.</p>
+        <button id="revealBtn">Reveal Destination</button>
+      </div>
     </div>
   </div>
 
@@ -138,8 +218,18 @@ const revealBtn = document.getElementById("revealBtn");
 const resetBtn = document.getElementById("resetBtn");
 const video = document.getElementById("video");
 
+/* Arrow UI */
+const arrowHud = document.getElementById("arrowHud");
+const arrowIcon = document.getElementById("arrowIcon");
+const headingOut = document.getElementById("heading");
+const bearingOut = document.getElementById("bearing");
+
 let watchId = null;
 let isWithin = false;
+
+let currentHeading = null; // 0..360
+let currentBearing = null; // 0..360
+let compassEnabled = false;
 
 function distanceMeters(lat1, lon1, lat2, lon2) {
   const R = 6371000;
@@ -152,21 +242,92 @@ function distanceMeters(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+function bearingDegrees(lat1, lon1, lat2, lon2) {
+  const toRad = x => x * Math.PI / 180;
+  const toDeg = x => x * 180 / Math.PI;
+
+  const φ1 = toRad(lat1);
+  const φ2 = toRad(lat2);
+  const Δλ = toRad(lon2 - lon1);
+
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  const θ = Math.atan2(y, x);
+  return (toDeg(θ) + 360) % 360;
+}
+
+function formatDeg(d) {
+  if (d == null || !isFinite(d)) return "—";
+  return Math.round(d) + "°";
+}
+
+function updateArrowUI() {
+  if (!compassEnabled || currentHeading == null || currentBearing == null) {
+    arrowHud.classList.add("hidden");
+    return;
+  }
+
+  arrowHud.classList.remove("hidden");
+  headingOut.textContent = formatDeg(currentHeading);
+  bearingOut.textContent = formatDeg(currentBearing);
+
+  // Arrow rotation to point toward destination relative to phone heading
+  const rotation = (currentBearing - currentHeading + 360) % 360;
+  arrowIcon.style.transform = `rotate(${rotation}deg)`;
+}
+
+async function enableCompass() {
+  try {
+    if (typeof DeviceOrientationEvent === "undefined") {
+      compassEnabled = false;
+      return false;
+    }
+
+    // iOS 13+ requires explicit permission
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      const res = await DeviceOrientationEvent.requestPermission();
+      if (res !== "granted") {
+        compassEnabled = false;
+        return false;
+      }
+    }
+
+    window.addEventListener("deviceorientation", (ev) => {
+      // iOS Safari (best)
+      if (typeof ev.webkitCompassHeading === "number") {
+        currentHeading = ev.webkitCompassHeading; // 0..360, 0 = north
+      } else if (typeof ev.alpha === "number") {
+        // Android/others (approx)
+        currentHeading = (360 - ev.alpha) % 360;
+      } else {
+        currentHeading = null;
+      }
+      updateArrowUI();
+    }, true);
+
+    compassEnabled = true;
+    return true;
+  } catch (e) {
+    compassEnabled = false;
+    return false;
+  }
+}
+
 function startCamera() {
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then(stream => video.srcObject = stream);
+  return navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => { video.srcObject = stream; });
 }
 
 function startLocationWatch() {
   watchId = navigator.geolocation.watchPosition(pos => {
-    const d = distanceMeters(
-      pos.coords.latitude,
-      pos.coords.longitude,
-      DESTINATION.lat,
-      DESTINATION.lng
-    );
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
 
+    const d = distanceMeters(lat, lng, DESTINATION.lat, DESTINATION.lng);
     distanceEl.textContent = Math.round(d) + " m";
+
+    currentBearing = bearingDegrees(lat, lng, DESTINATION.lat, DESTINATION.lng);
+    updateArrowUI();
 
     if (d <= DESTINATION.radius) {
       isWithin = true;
@@ -181,21 +342,31 @@ function startLocationWatch() {
     }
 
   }, err => {
-    statusEl.textContent = "Location error. Please enable GPS.";
-  }, { enableHighAccuracy: true });
+    statusEl.textContent = "Location error. Please enable GPS and allow location access.";
+  }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
 }
 
 startBtn.onclick = async () => {
-  statusEl.textContent = "Starting Hunt Mode…";
-  await startCamera();
+  statusEl.textContent = "Starting Hunt Mode… (allow Location, Camera, and Motion if prompted)";
+  try {
+    await startCamera();
+  } catch (e) {
+    statusEl.textContent = "Camera permission denied. Please allow camera access and try again.";
+    return;
+  }
+
+  // Compass is optional – if denied, the arrow will remain hidden and distance still works.
+  await enableCompass();
+
   startLocationWatch();
+  statusEl.textContent = "Hunt Mode active. Use distance (and arrow if available) to guide you.";
 };
 
 revealBtn.onclick = () => {
   if (localStorage.getItem(LOCK_KEY) === "1") return;
   localStorage.setItem(LOCK_KEY, "1");
   clueCard.classList.remove("hidden");
-  audio.play();
+  audio.play().catch(() => {/* user can press play */});
 };
 
 resetBtn.onclick = () => {
